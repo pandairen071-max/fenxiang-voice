@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音频 - 分享圣乐团</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-logo" onclick="location.href='/'">🎵 分享圣乐团</div>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="/">首页</a></li>
+      <li><a href="/mv">MV作品</a></li>
+      <li><a href="/audio" class="active">音频</a></li>
+      <li><a href="/sheets">乐谱</a></li>
+      <li><a href="/admin">管理</a></li>
+    </ul>
+    <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+  </nav>
+
+  <main class="page">
+    <div class="section-header" style="margin-top: 24px;">
+      <h2>🎹 伴奏</h2>
+      <span style="color: var(--color-text-secondary); font-size: 0.9rem;" id="count"></span>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <input type="text" id="searchInput" placeholder="搜索伴奏..." style="width:100%; padding:10px 14px; background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-sm); color:var(--color-text); font-size:0.95rem; box-sizing:border-box;">
+    </div>
+
+    <div id="audioList">
+      <div class="loading-spinner"></div>
+    </div>
+  </main>
+
+  <div class="global-player" id="globalPlayer">
+    <div class="player-cover" id="playerCover">🎵</div>
+    <div class="player-info">
+      <div class="title" id="playerTitle">未播放</div>
+      <div class="artist" id="playerArtist">—</div>
+    </div>
+    <div class="player-controls">
+      <button class="player-btn" id="playerPrev">⏮</button>
+      <button class="player-btn play" id="playerPlay">▶</button>
+      <button class="player-btn" id="playerNext">⏭</button>
+    </div>
+    <div class="player-progress">
+      <span class="time" id="playerCurTime">0:00</span>
+      <div class="bar" id="playerBar"><div class="fill" id="playerFill"></div></div>
+      <span class="time" id="playerDur">0:00</span>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="/js/player.js"></script>
+  <script>
+    document.getElementById('menuToggle').onclick = () => document.getElementById('navLinks').classList.toggle('open');
+
+    let playlist = [];
+
+    let allAudio = [];
+
+    function renderAudio(data) {
+      const el = document.getElementById('audioList');
+      if (!data.length) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">🎹</div><p>暂无伴奏</p></div>';
+        document.getElementById('count').textContent = '共 0 首';
+        return;
+      }
+      el.innerHTML = data.map((audio, i) => `
+        <div class="audio-card" data-id="${audio.id}" data-index="${i}">
+          <div class="cover">🎵</div>
+          <div class="info">
+            <div class="title">${audio.title}</div>
+            <div class="artist">${audio.artist_name}</div>
+          </div>
+          <div class="play-icon">▶</div>
+        </div>
+      `).join('');
+
+      el.querySelectorAll('.audio-card').forEach(card => {
+        card.onclick = () => {
+          const idx = parseInt(card.dataset.index);
+          window.player.setPlaylist(data);
+          window.player.loadSong({ ...data[idx], type: 'accompaniment' });
+          window.player.play();
+        };
+      });
+      document.getElementById('count').textContent = `共 ${data.length} 首`;
+    }
+
+    fetch('/api/accompaniment')
+      .then(r => r.json())
+      .then(data => {
+        allAudio = data;
+        playlist = data; // accompaniment uses same playlist
+        renderAudio(data);
+      })
+      .catch(() => {
+        document.getElementById('audioList').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const kw = e.target.value.trim().toLowerCase();
+      if (!kw) { renderAudio(allAudio); return; }
+      const filtered = allAudio.filter(a => a.title && a.title.toLowerCase().includes(kw));
+      renderAudio(filtered);
+    });
+
+    window.player = new GlobalPlayer();
+  </script>
+    });
+  }
+</body>
+</html>

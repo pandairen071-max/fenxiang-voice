@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - 分享圣乐团</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-logo" onclick="location.href='/'">🎵 分享圣乐团</div>
+    <ul class="navbar-links">
+      <li><a href="/">返回首页</a></li>
+    </ul>
+  </nav>
+
+  <main class="admin-container">
+    <h1 style="font-family: var(--font-display); color: var(--color-primary); margin: 24px 0 8px; font-size: 1.8rem;">管理后台</h1>
+    <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 32px;">上传和管理 MV、音频、乐谱资源</p>
+
+    <!-- 标签页 -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="audio">🎧 音频管理</button>
+      <button class="admin-tab" data-tab="mv">🎬 MV管理</button>
+      <button class="admin-tab" data-tab="accompaniment">🎹 伴奏管理</button>
+      <button class="admin-tab" data-tab="sheets">🎼 乐谱管理</button>
+    </div>
+
+    <!-- ========== 音频管理 ========== -->
+    <div class="admin-section active" id="sec-audio">
+      <div class="upload-form">
+        <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--color-primary);">上传音频</h3>
+        <div class="form-group">
+          <label>音频文件（支持 mp3/wav/flac/ogg/m4a，可多选）</label>
+          <input type="file" id="audioFiles" accept="audio/*" multiple style="background: var(--color-bg-secondary); padding: 10px; border-radius: var(--radius-sm); width: 100%;">
+        </div>
+        <div class="upload-preview" id="audioPreview" style="display: none;"></div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label>歌曲标题（留空则用文件名）</label>
+          <input type="text" id="audioTitle" placeholder="例如：平安夜">
+        </div>
+        <div class="form-group">
+          <label>描述（可选）</label>
+          <input type="text" id="audioDesc" placeholder="简短描述">
+        </div>
+        <button class="btn btn-primary" id="uploadAudioBtn" onclick="uploadAudio()">上传音频</button>
+      </div>
+
+      <h3 style="margin-bottom: 16px; font-size: 1rem;">已有音频</h3>
+      <div class="manage-list" id="audioList">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+
+    <!-- ========== 伴奏管理 ========== -->
+    <div class="admin-section" id="sec-accompaniment">
+      <div class="upload-form">
+        <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--color-primary);">上传伴奏</h3>
+        <div class="form-group">
+          <label>伴奏文件（支持 mp3/wav/flac/ogg/m4a，可多选）</label>
+          <input type="file" id="accFiles" accept="audio/*" multiple style="background: var(--color-bg-secondary); padding: 10px; border-radius: var(--radius-sm); width: 100%;">
+        </div>
+        <div class="upload-preview" id="accPreview" style="display: none;"></div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label>伴奏标题（留空则用文件名）</label>
+          <input type="text" id="accTitle" placeholder="例如：平安夜 - 伴奏版">
+        </div>
+        <button class="btn btn-primary" id="uploadAccBtn" onclick="uploadAcc()">上传伴奏</button>
+      </div>
+
+      <h3 style="margin-bottom: 16px; font-size: 1rem;">已有伴奏</h3>
+      <div class="manage-list" id="accList">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+
+    <!-- ========== MV管理 ========== -->
+    <div class="admin-section" id="sec-mv">
+      <div class="upload-form">
+        <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--color-primary);">上传MV</h3>
+        <div class="form-group">
+          <label>视频文件（支持 mp4/webm/mov，可多选）</label>
+          <input type="file" id="mvFiles" accept="video/*" multiple style="background: var(--color-bg-secondary); padding: 10px; border-radius: var(--radius-sm); width: 100%;">
+        </div>
+        <div class="upload-preview" id="mvPreview" style="display: none;"></div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label>MV标题</label>
+          <input type="text" id="mvTitle" placeholder="例如：平安夜 MV">
+        </div>
+        <div class="form-group">
+          <label>描述（可选）</label>
+          <input type="text" id="mvDesc" placeholder="简短描述">
+        </div>
+        <button class="btn btn-primary" id="uploadMvBtn" onclick="uploadMv()">上传MV</button>
+      </div>
+
+      <h3 style="margin-bottom: 16px; font-size: 1rem;">已有MV</h3>
+      <div class="manage-list" id="mvList">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+
+    <!-- ========== 乐谱管理 ========== -->
+    <div class="admin-section" id="sec-sheets">
+      <div class="upload-form">
+        <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--color-primary);">批量上传乐谱（最方便的方式）</h3>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 16px;">
+          将乐谱图片按顺序命名（如 01.jpg, 02.jpg...），然后一次性拖入上传区域，系统会自动按文件名排序。
+        </p>
+
+        <!-- 拖拽上传区 -->
+        <div class="upload-zone" id="sheetsDropZone">
+          <div class="icon">📁</div>
+          <p>拖拽乐谱图片到这里</p>
+          <p class="hint">支持 jpg/png/webp/PDF，可一次上传多张</p>
+          <input type="file" id="sheetFiles" accept="image/*,.pdf" multiple style="display:none;">
+          <button class="btn btn-primary" style="margin-top: 16px;" onclick="document.getElementById('sheetFiles').click()">选择文件</button>
+        </div>
+
+        <div class="upload-preview" id="sheetPreview" style="display: none;"></div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label>歌曲名称（必填）</label>
+          <input type="text" id="sheetSongTitle" placeholder="例如：平安夜 - 用于标识这组乐谱">
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="uploadSheetsBtn" onclick="uploadSheets()">上传乐谱</button>
+          <button class="btn" style="background: var(--color-bg-secondary); color: var(--color-text);" onclick="clearSheetPreview()">清空</button>
+        </div>
+      </div>
+
+      <!-- 已有乐谱（按歌曲分组） -->
+      <h3 style="margin-bottom: 16px; font-size: 1rem;">已有乐谱（按歌曲分组）</h3>
+      <div id="sheetsList">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    // ============ 标签页切换 ============
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'accompaniment') loadAccList();
+        if (tab.dataset.tab === 'audio') loadAudioList();
+        if (tab.dataset.tab === 'mv') loadMvList();
+        if (tab.dataset.tab === 'sheets') loadSheetsList();
+      };
+    });
+
+    // ============ Toast ============
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + type;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ============ 音频上传 ============
+    let pendingAudioFiles = [];
+
+    document.getElementById('audioFiles').onchange = (e) => {
+      pendingAudioFiles = Array.from(e.target.files);
+      renderAudioPreview();
+    };
+
+    function renderAudioPreview() {
+      const el = document.getElementById('audioPreview');
+      if (!pendingAudioFiles.length) {
+        el.style.display = 'none';
+        return;
+      }
+      el.style.display = 'grid';
+      el.innerHTML = pendingAudioFiles.map((f, i) => `
+        <div class="preview-item">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--color-bg-secondary);">🎵</div>
+          <div style="position:absolute;bottom:4px;left:4px;right:4px;font-size:0.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;background:rgba(0,0,0,0.6);padding:2px 4px;border-radius:3px;">${f.name}</div>
+          <div class="remove" onclick="removeAudioFile(${i})">✕</div>
+        </div>
+      `).join('');
+    }
+
+    function removeAudioFile(index) {
+      pendingAudioFiles.splice(index, 1);
+      renderAudioPreview();
+    }
+
+    async function uploadAudio() {
+      const files = pendingAudioFiles;
+      if (!files.length) return showToast('请先选择音频文件', 'error');
+
+      const title = document.getElementById('audioTitle').value.trim();
+      const desc = document.getElementById('audioDesc').value.trim();
+      const btn = document.getElementById('uploadAudioBtn');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      let success = 0, failed = 0;
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('audio', file);
+        formData.append('title', title || file.name.replace(/\.[^.]+$/, ''));
+        formData.append('description', desc);
+
+        const res = await fetch('/api/audio', { method: 'POST', body: formData });
+        if (res.ok) success++;
+        else failed++;
+      }
+
+      btn.disabled = false;
+      btn.textContent = '上传音频';
+
+      if (success > 0) showToast(`成功上传 ${success} 个音频`, 'success');
+      if (failed > 0) showToast(`${failed} 个失败`, 'error');
+
+      if (success > 0) {
+        pendingAudioFiles = [];
+        document.getElementById('audioFiles').value = '';
+        document.getElementById('audioPreview').style.display = 'none';
+        document.getElementById('audioTitle').value = '';
+        document.getElementById('audioDesc').value = '';
+        loadAudioList();
+      }
+    }
+
+    async function loadAudioList() {
+      const res = await fetch('/api/audio');
+      const data = await res.json();
+      const el = document.getElementById('audioList');
+      if (!data.length) {
+        el.innerHTML = '<div class="empty-state"><p>暂无音频</p></div>';
+        return;
+      }
+      el.innerHTML = data.map(a => `
+        <div class="manage-item">
+          <div class="thumb"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--color-bg-secondary);">🎵</div></div>
+          <div class="info">
+            <div class="title">${a.title}</div>
+            <div class="meta">${a.artist_name} · ${new Date(a.created_at).toLocaleDateString('zh-CN')}</div>
+          </div>
+          <div class="actions">
+            <button class="del" onclick="deleteAudio(${a.id})">删除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteAudio(id) {
+      if (!confirm('确定删除？')) return;
+      const res = await fetch(`/api/audio/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('已删除', 'success');
+        loadAudioList();
+      } else {
+        showToast('删除失败', 'error');
+      }
+    }
+
+    // ============ 伴奏上传 ============
+    let pendingAccFiles = [];
+
+    document.getElementById('accFiles').onchange = (e) => {
+      pendingAccFiles = Array.from(e.target.files);
+      const el = document.getElementById('accPreview');
+      if (!pendingAccFiles.length) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      el.innerHTML = pendingAccFiles.map((f, i) => `
+        <div class="preview-item">
+          <span>🎹 ${f.name}</span>
+          <button onclick="removeAccFile(${i})">×</button>
+        </div>`).join('');
+    };
+
+    function removeAccFile(index) {
+      pendingAccFiles.splice(index, 1);
+      document.getElementById('accFiles').onchange({ target: { files: pendingAccFiles } });
+    }
+
+    async function uploadAcc() {
+      const files = pendingAccFiles;
+      if (!files.length) return showToast('请先选择伴奏文件', 'error');
+
+      const title = document.getElementById('accTitle').value.trim();
+      const btn = document.getElementById('uploadAccBtn');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      let success = 0, failed = 0;
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('audio', file);
+        formData.append('title', title || file.name.replace(/\.[^.]+$/, ''));
+
+        const res = await fetch('/api/accompaniment', { method: 'POST', body: formData });
+        if (res.ok) success++;
+        else failed++;
+      }
+
+      btn.disabled = false;
+      btn.textContent = '上传伴奏';
+
+      if (success > 0) showToast(`成功上传 ${success} 个伴奏`, 'success');
+      if (failed > 0) showToast(`${failed} 个失败`, 'error');
+
+      if (success > 0) {
+        pendingAccFiles = [];
+        document.getElementById('accFiles').value = '';
+        document.getElementById('accPreview').style.display = 'none';
+        document.getElementById('accTitle').value = '';
+        loadAccList();
+      }
+    }
+
+    async function loadAccList() {
+      const res = await fetch('/api/accompaniment');
+      const data = await res.json();
+      const el = document.getElementById('accList');
+      if (!data.length) {
+        el.innerHTML = '<div class="empty-state"><p>暂无伴奏</p></div>';
+        return;
+      }
+      el.innerHTML = data.map(a => `
+        <div class="manage-item">
+          <div class="thumb"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--color-bg-secondary);">🎹</div></div>
+          <div class="info">
+            <div class="title">${a.title}</div>
+            <div class="meta">${a.song_title || '伴奏'} · ${new Date(a.created_at).toLocaleDateString('zh-CN')}</div>
+          </div>
+          <div class="actions">
+            <button class="del" onclick="deleteAcc(${a.id})">删除</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function deleteAcc(id) {
+      if (!confirm('确定删除？')) return;
+      const res = await fetch(`/api/accompaniment/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('已删除', 'success');
+        loadAccList();
+      } else {
+        showToast('删除失败', 'error');
+      }
+    }
+
+    // ============ MV上传 ============
+    let pendingMvFiles = [];
+
+    document.getElementById('mvFiles').onchange = (e) => {
+      pendingMvFiles = Array.from(e.target.files);
+      renderMvPreview();
+    };
+
+    function renderMvPreview() {
+      const el = document.getElementById('mvPreview');
+      if (!pendingMvFiles.length) {
+        el.style.display = 'none';
+        return;
+      }
+      el.style.display = 'grid';
+      el.innerHTML = pendingMvFiles.map((f, i) => `
+        <div class="preview-item">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:#000;color:#fff;">🎬</div>
+          <div style="position:absolute;bottom:4px;left:4px;right:4px;font-size:0.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;background:rgba(0,0,0,0.6);padding:2px 4px;border-radius:3px;">${f.name}</div>
+          <div class="remove" onclick="removeMvFile(${i})">✕</div>
+        </div>
+      `).join('');
+    }
+
+    function removeMvFile(index) {
+      pendingMvFiles.splice(index, 1);
+      renderMvPreview();
+    }
+
+    async function uploadMv() {
+      const files = pendingMvFiles;
+      if (!files.length) return showToast('请先选择视频文件', 'error');
+
+      const title = document.getElementById('mvTitle').value.trim();
+      const desc = document.getElementById('mvDesc').value.trim();
+      const btn = document.getElementById('uploadMvBtn');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      let success = 0, failed = 0;
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('video', file);
+        formData.append('title', title || file.name.replace(/\.[^.]+$/, ''));
+        formData.append('description', desc);
+
+        const res = await fetch('/api/mv', { method: 'POST', body: formData });
+        if (res.ok) success++;
+        else failed++;
+      }
+
+      btn.disabled = false;
+      btn.textContent = '上传MV';
+
+      if (success > 0) showToast(`成功上传 ${success} 个MV`, 'success');
+      if (failed > 0) showToast(`${failed} 个失败`, 'error');
+
+      if (success > 0) {
+        pendingMvFiles = [];
+        document.getElementById('mvFiles').value = '';
+        document.getElementById('mvPreview').style.display = 'none';
+        document.getElementById('mvTitle').value = '';
+        document.getElementById('mvDesc').value = '';
+        loadMvList();
+      }
+    }
+
+    async function loadMvList() {
+      const res = await fetch('/api/mv');
+      const data = await res.json();
+      const el = document.getElementById('mvList');
+      if (!data.length) {
+        el.innerHTML = '<div class="empty-state"><p>暂无MV</p></div>';
+        return;
+      }
+      el.innerHTML = data.map(m => `
+        <div class="manage-item">
+          <div class="thumb">
+            ${m.thumbnail_path
+              ? `<img src="/uploads/${m.thumbnail_path}" alt="${m.title}">`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--color-bg-secondary);">🎬</div>`
+            }
+          </div>
+          <div class="info">
+            <div class="title">${m.title}</div>
+            <div class="meta">${m.artist_name} · ${new Date(m.created_at).toLocaleDateString('zh-CN')}</div>
+          </div>
+          <div class="actions">
+            <button class="del" onclick="deleteMv(${m.id})">删除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteMv(id) {
+      if (!confirm('确定删除？')) return;
+      const res = await fetch(`/api/mv/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('已删除', 'success');
+        loadMvList();
+      } else {
+        showToast('删除失败', 'error');
+      }
+    }
+
+    // ============ 乐谱上传（核心功能） ============
+    let pendingSheetFiles = [];
+
+    // 拖拽支持
+    const dropZone = document.getElementById('sheetsDropZone');
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addSheetFiles(Array.from(e.dataTransfer.files));
+    });
+
+    document.getElementById('sheetFiles').onchange = (e) => {
+      addSheetFiles(Array.from(e.target.files));
+      e.target.value = '';
+    };
+
+    function addSheetFiles(files) {
+      const imgExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+      files.forEach(f => {
+        const ext = f.name.split('.').pop().toLowerCase();
+        if (imgExt.includes(ext) || ext === 'pdf') {
+          pendingSheetFiles.push(f);
+        }
+      });
+      renderSheetPreview();
+    }
+
+    function renderSheetPreview() {
+      const el = document.getElementById('sheetPreview');
+      if (!pendingSheetFiles.length) {
+        el.style.display = 'none';
+        return;
+      }
+      el.style.display = 'grid';
+
+      // 按文件名排序
+      pendingSheetFiles.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN', { numeric: true }));
+
+      el.innerHTML = pendingSheetFiles.map((f, i) => `
+        <div class="preview-item">
+          ${f.type.startsWith('image/') 
+            ? `<img src="${URL.createObjectURL(f)}" alt="${f.name}">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--color-bg-secondary);">📄</div>`
+          }
+          <div style="position:absolute;bottom:4px;left:4px;right:4px;font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;background:rgba(0,0,0,0.6);padding:2px 4px;border-radius:3px;">${i+1}. ${f.name}</div>
+          <div class="remove" onclick="removeSheetFile(${i})">✕</div>
+        </div>
+      `).join('');
+    }
+
+    function removeSheetFile(index) {
+      pendingSheetFiles.splice(index, 1);
+      renderSheetPreview();
+    }
+
+    function clearSheetPreview() {
+      pendingSheetFiles = [];
+      document.getElementById('sheetPreview').style.display = 'none';
+    }
+
+    async function uploadSheets() {
+      const files = pendingSheetFiles;
+      if (!files.length) return showToast('请先选择乐谱文件', 'error');
+
+      const songTitle = document.getElementById('sheetSongTitle').value.trim();
+      if (!songTitle) return showToast('请填写歌曲名称', 'error');
+
+      const btn = document.getElementById('uploadSheetsBtn');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      const formData = new FormData();
+      files.forEach(f => formData.append('images', f));
+      formData.append('title', songTitle);
+
+      try {
+        const res = await fetch('/api/sheets/batch', { method: 'POST', body: formData });
+        if (res.ok) {
+          const result = await res.json();
+          showToast(`成功上传 ${result.count} 张乐谱到「${songTitle}」`, 'success');
+          pendingSheetFiles = [];
+          document.getElementById('sheetPreview').style.display = 'none';
+          document.getElementById('sheetSongTitle').value = '';
+          loadSheetsList();
+        } else {
+          const err = await res.json();
+          showToast(err.error || '上传失败', 'error');
+        }
+      } catch (e) {
+        showToast('上传失败: ' + e.message, 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '上传乐谱';
+    }
+
+    async function loadSheetsList() {
+      const res = await fetch('/api/sheets');
+      const data = await res.json();
+      const el = document.getElementById('sheetsList');
+
+      if (!data.length) {
+        el.innerHTML = '<div class="empty-state"><p>暂无乐谱</p></div>';
+        return;
+      }
+
+      // 按歌曲分组
+      const groups = new Map();
+      data.forEach(s => {
+        const key = s.song_id;
+        if (!groups.has(key)) {
+          groups.set(key, { title: s.song_title || '未命名', sheets: [] });
+        }
+        groups.get(key).sheets.push(s);
+      });
+
+      el.innerHTML = Array.from(groups.entries()).map(([songId, group]) => `
+        <div class="manage-list" style="margin-bottom: 20px;">
+          <div style="padding: 12px 16px; background: var(--color-bg-secondary); border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: var(--color-primary);">${group.title}</strong>
+              <span style="color: var(--color-text-secondary); font-size: 0.8rem; margin-left: 8px;">${group.sheets.length} 张</span>
+            </div>
+            <button class="del" style="padding: 4px 10px;" onclick="deleteSongSheets(${songId})">删除全部</button>
+          </div>
+          <div style="display: flex; gap: 8px; padding: 12px; overflow-x: auto;">
+            ${group.sheets.map((s, i) => `
+              <div style="position: relative; flex-shrink: 0; width: 80px;">
+                <img src="/uploads/${s.image_path}" alt="乐谱${i+1}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;">
+                <div style="font-size:0.7rem;color:var(--color-text-secondary);text-align:center;margin-top:4px;">${s.page_num}</div>
+                <button class="del" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;padding:0;font-size:0.65rem;" onclick="deleteSheet(${s.id})">✕</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteSheet(id) {
+      if (!confirm('确定删除这张乐谱？')) return;
+      const res = await fetch(`/api/sheets/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('已删除', 'success');
+        loadSheetsList();
+      }
+    }
+
+    async function deleteSongSheets(songId) {
+      if (!confirm('确定删除该歌曲的全部乐谱？')) return;
+      // 删除所有该歌曲的乐谱
+      const res = await fetch('/api/sheets?song_id=' + songId);
+      const data = await res.json();
+      for (const s of data) {
+        await fetch(`/api/sheets/${s.id}`, { method: 'DELETE' });
+      }
+      showToast('已删除', 'success');
+      loadSheetsList();
+    }
+
+    // ============ 初始化 ============
+    loadAudioList();
+    loadMvList();
+    loadSheetsList();
+  </script>
+    });
+  }
+</body>
+</html>

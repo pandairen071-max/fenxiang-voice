@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>乐谱 - 分享圣乐团</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-logo" onclick="location.href='/'">🎵 分享圣乐团</div>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="/">首页</a></li>
+      <li><a href="/mv">MV作品</a></li>
+      <li><a href="/audio">音频</a></li>
+      <li><a href="/accompaniment">伴奏</a></li>
+      <li><a href="/sheets" class="active">乐谱</a></li>
+      <li><a href="/admin">管理</a></li>
+    </ul>
+    <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+  </nav>
+
+  <main class="page">
+    <div class="section-header" style="margin-top: 24px;">
+      <h2>🎼 乐谱资料</h2>
+      <span style="color: var(--color-text-secondary); font-size: 0.9rem;" id="count"></span>
+    </div>
+
+    <!-- 筛选 -->
+    <div style="margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+      <select id="songFilter" style="padding: 8px 14px; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-text); font-size: 0.9rem;">
+        <option value="">全部歌曲</option>
+      </select>
+    </div>
+
+    <div class="sheets-grid" id="sheetsGrid">
+      <div class="loading-spinner"></div>
+    </div>
+  </main>
+
+  <!-- 灯箱 -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="prevSheet()">‹</button>
+    <img id="lightboxImg" src="" alt="乐谱">
+    <button class="lightbox-nav lightbox-next" onclick="nextSheet()">›</button>
+    <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="/js/player.js"></script>
+  <script>
+    document.getElementById('menuToggle').onclick = () => document.getElementById('navLinks').classList.toggle('open');
+
+    let allSheets = [];
+    let currentIndex = 0;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function renderSheets(sheets) {
+      const el = document.getElementById('sheetsGrid');
+      if (!sheets.length) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">🎼</div><p>暂无乐谱</p></div>';
+        return;
+      }
+      el.innerHTML = sheets.map((s, i) => `
+        <div class="sheet-card" onclick="openLightbox(${i})">
+          <img src="/uploads/${s.image_path}" alt="${s.song_title || '乐谱'}" loading="lazy">
+          <div class="sheet-title">${s.song_title || '乐谱'} ${s.page_num > 1 ? '- 第' + s.page_num + '页' : ''}</div>
+        </div>
+      `).join('');
+      document.getElementById('count').textContent = `共 ${sheets.length} 张`;
+    }
+
+    function openLightbox(index) {
+      currentIndex = index;
+      const filtered = getFilteredSheets();
+      const sheet = filtered[currentIndex];
+      if (!sheet) return;
+      document.getElementById('lightboxImg').src = '/uploads/' + sheet.image_path;
+      document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} / ${filtered.length}`;
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function prevSheet() {
+      const filtered = getFilteredSheets();
+      currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
+      document.getElementById('lightboxImg').src = '/uploads/' + filtered[currentIndex].image_path;
+      document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} / ${filtered.length}`;
+    }
+
+    function nextSheet() {
+      const filtered = getFilteredSheets();
+      currentIndex = (currentIndex + 1) % filtered.length;
+      document.getElementById('lightboxImg').src = '/uploads/' + filtered[currentIndex].image_path;
+      document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} / ${filtered.length}`;
+    }
+
+    function getFilteredSheets() {
+      const songId = document.getElementById('songFilter').value;
+      if (!songId) return allSheets;
+      return allSheets.filter(s => String(s.song_id) === songId);
+    }
+
+    // 键盘翻页
+    document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('lightbox').classList.contains('active')) return;
+      if (e.key === 'ArrowLeft') prevSheet();
+      if (e.key === 'ArrowRight') nextSheet();
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // 点击遮罩关闭
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox') closeLightbox();
+    });
+
+    // 加载数据
+    Promise.all([fetch('/api/sheets').then(r => r.json()), fetch('/api/songs').then(r => r.json())])
+      .then(([sheets, songs]) => {
+        allSheets = sheets;
+
+        // 填充筛选下拉
+        const songMap = new Map();
+        sheets.forEach(s => {
+          if (s.song_id) songMap.set(s.song_id, s.song_title || '未命名');
+        });
+        const songSelect = document.getElementById('songFilter');
+        songMap.forEach((title, id) => {
+          const opt = document.createElement('option');
+          opt.value = id;
+          opt.textContent = title;
+          songSelect.appendChild(opt);
+        });
+
+        renderSheets(sheets);
+      })
+      .catch(() => {
+        document.getElementById('sheetsGrid').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      });
+
+    // 筛选事件
+    document.getElementById('songFilter').onchange = () => {
+      renderSheets(getFilteredSheets());
+    };
+
+    window.player = new GlobalPlayer();
+  </script>
+    });
+  }
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "fenxiang-voice",
+  "version": "1.0.0",
+  "description": "分享圣乐团官网",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

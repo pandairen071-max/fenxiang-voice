@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分享圣乐团</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-logo">🎵 分享圣乐团</div>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="/" class="active">首页</a></li>
+      <li><a href="/mv">MV作品</a></li>
+      <li><a href="/audio">音频</a></li>
+      <li><a href="/accompaniment">伴奏</a></li>
+      <li><a href="/sheets">乐谱</a></li>
+      <li><a href="/admin">管理</a></li>
+    </ul>
+    <button class="menu-toggle" id="menuToggle" aria-label="菜单">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="page">
+    <!-- 首屏 -->
+    <section class="hero fade-in">
+      <h1>分享圣乐团</h1>
+      <p>你们白白地得来，也要白白地舍去 — 马太福音 10:8</p>
+    </section>
+
+    <!-- 三大板块 -->
+    <section class="section-cards fade-in">
+      <div class="section-card" onclick="location.href='/mv'">
+        <div class="icon">🎬</div>
+        <h3>MV作品</h3>
+        <div class="count" id="mvCount">—</div>
+        <div class="label">部作品</div>
+      </div>
+      <div class="section-card" onclick="location.href='/audio'">
+        <div class="icon">🎧</div>
+        <h3>音频录音</h3>
+        <div class="count" id="audioCount">—</div>
+        <div class="label">首歌曲</div>
+      </div>
+      <div class="section-card" onclick="location.href='/accompaniment'">
+        <div class="icon">🎹</div>
+        <h3>伴奏</h3>
+        <div class="count" id="accCount">—</div>
+        <div class="label">首伴奏</div>
+      </div>
+      <div class="section-card" onclick="location.href='/sheets'">
+        <div class="icon">🎼</div>
+        <h3>乐谱资料</h3>
+        <div class="count" id="sheetCount">—</div>
+        <div class="label">张乐谱</div>
+      </div>
+    </section>
+
+    <!-- 最近MV -->
+    <section style="margin-bottom: 48px;">
+      <div class="section-header">
+        <h2>最新 MV</h2>
+        <a href="/mv" class="more">查看全部 →</a>
+      </div>
+      <div class="content-grid" id="recentMv">
+        <div class="loading-spinner"></div>
+      </div>
+    </section>
+
+    <!-- 音频与伴奏双栏 -->
+    <section style="margin-bottom: 48px;">
+      <div class="two-col-section">
+        <!-- 音频栏 -->
+        <div class="two-col">
+          <div class="section-header">
+            <h2>🎧 音频录音</h2>
+            <a href="/audio" class="more">查看全部 →</a>
+          </div>
+          <div id="recentAudio">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+        <!-- 伴奏栏 -->
+        <div class="two-col">
+          <div class="section-header">
+            <h2>🎹 伴奏</h2>
+            <a href="/accompaniment" class="more">查看全部 →</a>
+          </div>
+          <div id="recentAcc">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 全局播放器 -->
+  <div class="global-player" id="globalPlayer">
+    <div class="player-cover" id="playerCover">🎵</div>
+    <div class="player-info">
+      <div class="title" id="playerTitle">未播放</div>
+      <div class="artist" id="playerArtist">—</div>
+    </div>
+    <div class="player-controls">
+      <button class="player-btn" id="playerPrev" title="上一首">⏮</button>
+      <button class="player-btn play" id="playerPlay" title="播放">▶</button>
+      <button class="player-btn" id="playerNext" title="下一首">⏭</button>
+    </div>
+    <div class="player-progress">
+      <span class="time" id="playerCurTime">0:00</span>
+      <div class="bar" id="playerBar">
+        <div class="fill" id="playerFill"></div>
+      </div>
+      <span class="time" id="playerDur">0:00</span>
+    </div>
+  </div>
+
+  <script src="/js/player.js"></script>
+  <script>
+    // 移动端菜单
+    document.getElementById('menuToggle').onclick = () => {
+      document.getElementById('navLinks').classList.toggle('open');
+    };
+
+    // 加载统计数据
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('mvCount').textContent = d.mvCount || 0;
+        document.getElementById('audioCount').textContent = d.audioCount || 0;
+        document.getElementById('sheetCount').textContent = d.sheetCount || 0;
+        document.getElementById('accCount').textContent = d.accCount || 0;
+      });
+
+    // 加载最近MV
+    fetch('/api/mv')
+      .then(r => r.json())
+      .then(data => {
+        const el = document.getElementById('recentMv');
+        if (!data.length) {
+          el.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><p>暂无MV作品</p></div>';
+          return;
+        }
+        el.innerHTML = data.slice(0, 6).map(mv => `
+          <div class="mv-card" onclick="location.href='/mv/${mv.id}'">
+            <div class="mv-thumb">
+              ${mv.thumbnail_path 
+                ? `<img src="/uploads/${mv.thumbnail_path}" alt="${mv.title}">`
+                : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-bg-secondary);font-size:2rem;">🎬</div>`
+              }
+              <div class="play-overlay"><div class="play-btn">▶</div></div>
+            </div>
+            <div class="mv-info">
+              <h4>${mv.title}</h4>
+              <div class="duration">${mv.description || 'MV作品'}</div>
+            </div>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('recentMv').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      });
+
+    // 加载最近音频
+    fetch('/api/audio')
+      .then(r => r.json())
+      .then(data => {
+        const el = document.getElementById('recentAudio');
+        if (!data.length) {
+          el.innerHTML = '<div class="empty-state"><div class="icon">🎧</div><p>暂无音频</p></div>';
+          return;
+        }
+        el.innerHTML = data.slice(0, 8).map(audio => `
+          <div class="audio-card" data-id="${audio.id}">
+            <div class="cover">🎵</div>
+            <div class="info">
+              <div class="title">${audio.title}</div>
+              <div class="artist">${audio.artist_name}</div>
+            </div>
+            <div class="play-icon">▶</div>
+          </div>
+        `).join('');
+
+        el.querySelectorAll('.audio-card').forEach(card => {
+          card.onclick = () => {
+            const id = card.dataset.id;
+            fetch(`/api/audio/${id}`)
+              .then(r => r.json())
+              .then(song => {
+                window.player.loadSong({ ...song, type: 'audio' });
+                window.player.play();
+              });
+          };
+        });
+      })
+      .catch(() => {
+        document.getElementById('recentAudio').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      });
+
+    // 加载最近伴奏
+    fetch('/api/accompaniment')
+      .then(r => r.json())
+      .then(data => {
+        const el = document.getElementById('recentAcc');
+        if (!data.length) {
+          el.innerHTML = '<div class="empty-state"><div class="icon">🎹</div><p>暂无伴奏</p></div>';
+          return;
+        }
+        el.innerHTML = data.slice(0, 8).map(acc => `
+          <div class="audio-card" data-id="${acc.id}">
+            <div class="cover">🎹</div>
+            <div class="info">
+              <div class="title">${acc.title}</div>
+              <div class="artist">${acc.song_title || '伴奏'}</div>
+            </div>
+            <div class="play-icon">▶</div>
+          </div>
+        `).join('');
+
+        el.querySelectorAll('.audio-card').forEach(card => {
+          card.onclick = () => {
+            const id = card.dataset.id;
+            fetch(`/api/accompaniment/${id}`)
+              .then(r => r.json())
+              .then(song => {
+                window.player.loadSong({ ...song, type: 'accompaniment' });
+                window.player.play();
+              });
+          };
+        });
+      })
+      .catch(() => {
+        document.getElementById('recentAcc').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      });
+
+    // 初始化全局播放器
+    window.player = new GlobalPlayer();
+  </script>
+    });
+  }
+</body>
+</html>

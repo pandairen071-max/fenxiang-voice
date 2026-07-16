@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MV作品 - 分享圣乐团</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-logo" onclick="location.href='/'">🎵 分享圣乐团</div>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="/">首页</a></li>
+      <li><a href="/mv" class="active">MV作品</a></li>
+      <li><a href="/audio">音频</a></li>
+      <li><a href="/accompaniment">伴奏</a></li>
+      <li><a href="/sheets">乐谱</a></li>
+      <li><a href="/admin">管理</a></li>
+    </ul>
+    <button class="menu-toggle" id="menuToggle" aria-label="菜单">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <main class="page">
+    <div class="section-header" style="margin-top: 24px;">
+      <h2>🎬 MV作品</h2>
+      <span style="color: var(--color-text-secondary); font-size: 0.9rem;" id="count"></span>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <div class="search-bar" style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="searchInput" placeholder="搜索MV..." style="flex:1; padding:10px 14px; background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-sm); color:var(--color-text); font-size:0.95rem;">
+      </div>
+    </div>
+
+    <div class="content-grid" id="mvList">
+      <div class="loading-spinner"></div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/js/player.js"></script>
+  <script>
+    document.getElementById('menuToggle').onclick = () => {
+      document.getElementById('navLinks').classList.toggle('open');
+    };
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + type;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    let allMvs = [];
+
+    function renderMvs(data) {
+      const el = document.getElementById('mvList');
+      if (!data.length) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><p>暂无MV作品</p></div>';
+        document.getElementById('count').textContent = '共 0 部';
+        return;
+      }
+      el.innerHTML = data.map(mv => `
+        <div class="mv-card" onclick="location.href='/mv/${mv.id}'">
+          <div class="mv-thumb">
+            ${mv.thumbnail_path
+              ? `<img src="/uploads/${mv.thumbnail_path}" alt="${mv.title}">`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-bg-secondary);font-size:2rem;">🎬</div>`
+            }
+            <div class="play-overlay"><div class="play-btn">▶</div></div>
+          </div>
+          <div class="mv-info">
+            <h4>${mv.title}</h4>
+            <div class="duration">${mv.description || 'MV作品'}</div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('count').textContent = `共 ${data.length} 部`;
+    }
+
+    fetch('/api/mv')
+      .then(r => r.json())
+      .then(data => {
+        allMvs = data;
+        renderMvs(data);
+      })
+      .catch(() => {
+        document.getElementById('mvList').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+      });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const kw = e.target.value.trim().toLowerCase();
+      if (!kw) { renderMvs(allMvs); return; }
+      const filtered = allMvs.filter(mv => mv.title && mv.title.toLowerCase().includes(kw));
+      renderMvs(filtered);
+    });
+
+    window.player = new GlobalPlayer();
+  </script>
+    });
+  }
+</body>
+</html>

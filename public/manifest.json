@@ -1,0 +1,21 @@
+{
+  "name": "繁星公益",
+  "short_name": "繁星公益",
+  "description": "繁星公益网站",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "/uploads/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/uploads/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

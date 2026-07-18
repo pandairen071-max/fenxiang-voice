@@ -2,7 +2,9 @@ const CACHE_NAME = 'fenxiang-voice-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/uploads/logo.png'
+  '/manifest.json',
+  '/uploads/logo-192.png',
+  '/uploads/logo-512.png'
 ];
 
 self.addEventListener('install', event => {

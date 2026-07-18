@@ -1,11 +1,11 @@
 {
-  "name": "分享圣乐团",
-  "short_name": "分享圣乐团",
+  "name": "SHARE",
+  "short_name": "SHARE",
   "description": "分享圣乐团 - 你们白白地得来，也要白白地舍去",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4A90E2",
+  "background_color": "#2d8c2d",
+  "theme_color": "#2d8c2d",
   "orientation": "portrait-primary",
   "icons": [
     {

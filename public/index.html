@@ -44,15 +44,9 @@
       </div>
       <div class="section-card" onclick="location.href='/audio'">
         <div class="icon">🎧</div>
-        <h3>音频录音</h3>
+        <h3>音频</h3>
         <div class="count" id="audioCount">—</div>
         <div class="label">首歌曲</div>
-      </div>
-      <div class="section-card" onclick="location.href='/accompaniment'">
-        <div class="icon">🎹</div>
-        <h3>伴奏</h3>
-        <div class="count" id="accCount">—</div>
-        <div class="label">首伴奏</div>
       </div>
       <div class="section-card" onclick="location.href='/sheets'">
         <div class="icon">🎼</div>
@@ -73,31 +67,7 @@
       </div>
     </section>
 
-    <!-- 音频与伴奏双栏 -->
-    <section style="margin-bottom: 48px;">
-      <div class="two-col-section">
-        <!-- 音频栏 -->
-        <div class="two-col">
-          <div class="section-header">
-            <h2>🎧 音频录音</h2>
-            <a href="/audio" class="more">查看全部 →</a>
-          </div>
-          <div id="recentAudio">
-            <div class="loading-spinner"></div>
-          </div>
-        </div>
-        <!-- 伴奏栏 -->
-        <div class="two-col">
-          <div class="section-header">
-            <h2>🎹 伴奏</h2>
-            <a href="/accompaniment" class="more">查看全部 →</a>
-          </div>
-          <div id="recentAcc">
-            <div class="loading-spinner"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+
   </main>
 
   <!-- Toast 提示 -->
@@ -168,78 +138,6 @@
       })
       .catch(() => {
         document.getElementById('recentMv').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
-      });
-
-    // 加载最近音频
-    fetch('/api/audio')
-      .then(r => r.json())
-      .then(data => {
-        const el = document.getElementById('recentAudio');
-        if (!data.length) {
-          el.innerHTML = '<div class="empty-state"><div class="icon">🎧</div><p>暂无音频</p></div>';
-          return;
-        }
-        el.innerHTML = data.slice(0, 8).map(audio => `
-          <div class="audio-card" data-id="${audio.id}">
-            <div class="cover">🎵</div>
-            <div class="info">
-              <div class="title">${audio.title}</div>
-              <div class="artist">${audio.artist_name}</div>
-            </div>
-            <div class="play-icon">▶</div>
-          </div>
-        `).join('');
-
-        el.querySelectorAll('.audio-card').forEach(card => {
-          card.onclick = () => {
-            const id = card.dataset.id;
-            fetch(`/api/audio/${id}`)
-              .then(r => r.json())
-              .then(song => {
-                window.player.loadSong({ ...song, type: 'audio' });
-                window.player.play();
-              });
-          };
-        });
-      })
-      .catch(() => {
-        document.getElementById('recentAudio').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
-      });
-
-    // 加载最近伴奏
-    fetch('/api/accompaniment')
-      .then(r => r.json())
-      .then(data => {
-        const el = document.getElementById('recentAcc');
-        if (!data.length) {
-          el.innerHTML = '<div class="empty-state"><div class="icon">🎹</div><p>暂无伴奏</p></div>';
-          return;
-        }
-        el.innerHTML = data.slice(0, 8).map(acc => `
-          <div class="audio-card" data-id="${acc.id}">
-            <div class="cover">🎹</div>
-            <div class="info">
-              <div class="title">${acc.title}</div>
-              <div class="artist">${acc.song_title || '伴奏'}</div>
-            </div>
-            <div class="play-icon">▶</div>
-          </div>
-        `).join('');
-
-        el.querySelectorAll('.audio-card').forEach(card => {
-          card.onclick = () => {
-            const id = card.dataset.id;
-            fetch(`/api/accompaniment/${id}`)
-              .then(r => r.json())
-              .then(song => {
-                window.player.loadSong({ ...song, type: 'accompaniment' });
-                window.player.play();
-              });
-          };
-        });
-      })
-      .catch(() => {
-        document.getElementById('recentAcc').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
       });
 
     // 初始化全局播放器

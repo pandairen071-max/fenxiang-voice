@@ -104,7 +104,9 @@ router.delete('/mv/:id', (req, res) => {
 // ============ 音频 接口 ============
 router.get('/audio', (req, res) => {
   try {
-    res.json(songs.getAll('audio'));
+    // 只返回有实际音频文件的记录（排除乐谱占位条目）
+    const all = songs.getAll('audio');
+    res.json(all.filter(s => s.file_path));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

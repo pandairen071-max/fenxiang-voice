@@ -196,7 +196,7 @@ const accompaniment = {
 const stats = {
   get: () => {
     const mvCount = db.prepare("SELECT COUNT(*) as count FROM songs WHERE type = 'mv'").get().count;
-    const audioCount = db.prepare("SELECT COUNT(*) as count FROM songs WHERE type = 'audio'").get().count;
+    const audioCount = db.prepare("SELECT COUNT(*) as count FROM songs WHERE type = 'audio' AND file_path != ''").get().count;
     const sheetCount = sheets.count();
     const accCount = accompaniment.count();
     return { mvCount, audioCount, sheetCount, accCount };

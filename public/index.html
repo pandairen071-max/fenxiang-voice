@@ -66,11 +66,11 @@
       </div>
     </section>
 
-    <!-- 最近MV -->
+    <!-- 最新上传 -->
     <section style="margin-bottom: 48px;">
       <div class="section-header">
-        <h2>最新 MV</h2>
-        <a href="/mv" class="more">查看全部 →</a>
+        <h2>最新上传</h2>
+        <a href="/audio" class="more">查看全部 →</a>
       </div>
       <div class="content-grid" id="recentMv">
         <div class="loading-spinner"></div>
@@ -121,28 +121,25 @@
         document.getElementById('accCount').textContent = d.accCount || 0;
       });
 
-    // 加载最近MV
-    fetch('/api/mv')
+    // 加载最新上传（音频）
+    fetch('/api/audio')
       .then(r => r.json())
       .then(data => {
         const el = document.getElementById('recentMv');
         if (!data.length) {
-          el.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><p>暂无MV作品</p></div>';
+          el.innerHTML = '<div class="empty-state"><div class="icon">🎧</div><p>暂无音频</p></div>';
           return;
         }
-        el.innerHTML = data.slice(0, 6).map(mv => `
-          <div class="mv-card" onclick="location.href='/mv/${mv.id}'">
-            <div class="mv-thumb">
-              ${mv.thumbnail_path 
-                ? `<img src="/uploads/${mv.thumbnail_path}" alt="${mv.title}">`
-                : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-bg-secondary);font-size:2rem;">🎬</div>`
-              }
-              <div class="play-overlay"><div class="play-btn">▶</div></div>
+        el.innerHTML = data.slice(0, 6).map(audio => `
+          <div class="audio-card" onclick="location.href='/audio'">
+            <div class="cover">
+              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-bg-secondary);font-size:1.4rem;">🎵</div>
             </div>
-            <div class="mv-info">
-              <h4>${mv.title}</h4>
-              <div class="duration">${mv.description || 'MV作品'}</div>
+            <div class="info">
+              <div class="title">${audio.title}</div>
+              <div class="artist">${audio.artist_name}</div>
             </div>
+            <div class="play-icon">▶</div>
           </div>
         `).join('');
       })

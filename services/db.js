@@ -44,14 +44,14 @@ const songs = {
         FROM songs s
         JOIN artists a ON a.id = s.artist_id
         WHERE s.type = ?
-        ORDER BY s.created_at DESC
+        ORDER BY s.title ASC
       `).all(type);
     }
     return db.prepare(`
       SELECT s.*, a.name as artist_name
       FROM songs s
       JOIN artists a ON a.id = s.artist_id
-      ORDER BY s.created_at DESC
+      ORDER BY s.title ASC
     `).all();
   },
 
@@ -109,7 +109,7 @@ const sheets = {
       SELECT sh.*, s.title as song_title, s.type as song_type
       FROM sheets sh
       JOIN songs s ON s.id = sh.song_id
-      ORDER BY sh.song_id, sh.page_num
+      ORDER BY s.title ASC, sh.page_num ASC
     `).all();
   },
 
@@ -149,7 +149,7 @@ const accompaniment = {
       SELECT ac.*, s.title as song_title
       FROM accompaniment_files ac
       LEFT JOIN songs s ON s.id = ac.song_id
-      ORDER BY ac.created_at DESC
+      ORDER BY ac.title ASC
     `).all();
   },
 

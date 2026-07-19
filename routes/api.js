@@ -4,6 +4,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { artists, songs, sheets, stats, accompaniment } = require('../services/db');
+const { pinyin } = require('pinyin');
+
+// 按拼音排序辅助函数
+function sortByPinyin(list, key = 'title') {
+  return list.sort((a, b) => {
+    const pa = pinyin(a[key], { style: pinyin.STYLE_NORMAL }).join('');
+    const pb = pinyin(b[key], { style: pinyin.STYLE_NORMAL }).join('');
+    return pa.localeCompare(pb);
+  });
+}
 
 // ============ 静态资源路径 ============
 const UPLOADS_BASE = path.join(__dirname, '../public/uploads');
@@ -48,7 +58,7 @@ router.get('/stats', (req, res) => {
 // ============ MV 接口 ============
 router.get('/mv', (req, res) => {
   try {
-    res.json(songs.getAll('mv'));
+    res.json(sortByPinyin(songs.getAll('mv')));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -104,9 +114,9 @@ router.delete('/mv/:id', (req, res) => {
 // ============ 音频 接口 ============
 router.get('/audio', (req, res) => {
   try {
-    // 只返回有实际音频文件的记录（排除乐谱占位条目）
+    // 只返回有实际音频文件的记录（排除乐谱占位条目），按拼音排序
     const all = songs.getAll('audio');
-    res.json(all.filter(s => s.file_path));
+    res.json(sortByPinyin(all.filter(s => s.file_path)));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -157,7 +167,7 @@ router.get('/sheets', (req, res) => {
     if (song_id) {
       res.json(sheets.getAll(parseInt(song_id)));
     } else {
-      res.json(sheets.getAll());
+      res.json(sortByPinyin(sheets.getAll(), 'song_title'));
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -245,7 +255,7 @@ router.get('/search', (req, res) => {
 // ============ 伴奏接口 ============
 router.get('/accompaniment', (req, res) => {
   try {
-    res.json(accompaniment.getAll());
+    res.json(sortByPinyin(accompaniment.getAll()));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -291,7 +301,7 @@ router.delete('/accompaniment/:id', (req, res) => {
 router.get('/songs', (req, res) => {
   try {
     const { type } = req.query;
-    res.json(songs.getAll(type || null));
+    res.json(sortByPinyin(songs.getAll(type || null)));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

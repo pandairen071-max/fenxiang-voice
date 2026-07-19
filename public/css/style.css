@@ -923,13 +923,17 @@ input, textarea { font-family: inherit; }
     grid-template-columns: 1fr;
   }
 
+  .section-card {
+    width: 100%;
+  }
+
   .two-col-section {
     grid-template-columns: 1fr;
     gap: 20px;
   }
 
   .content-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .player-progress { display: none; }
@@ -943,7 +947,7 @@ input, textarea { font-family: inherit; }
   .hero h1 { font-size: 1.8rem; }
   .hero { padding: 40px 0 30px; }
   .content-grid { grid-template-columns: 1fr; }
-  .sheets-grid { grid-template-columns: repeat(2, 1fr); }
+  .sheets-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- 动画 ---------- */

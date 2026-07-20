@@ -51,7 +51,7 @@
       <div class="manage-list" id="audioList">
         <div class="loading-spinner"></div>
       </div>
-    </div>
+  </div>
 
     <!-- ========== 伴奏管理 ========== -->
     <div class="admin-section" id="sec-accompaniment">
@@ -73,7 +73,7 @@
       <div class="manage-list" id="accList">
         <div class="loading-spinner"></div>
       </div>
-    </div>
+  </div>
 
     <!-- ========== MV管理 ========== -->
     <div class="admin-section" id="sec-mv">
@@ -99,7 +99,7 @@
       <div class="manage-list" id="mvList">
         <div class="loading-spinner"></div>
       </div>
-    </div>
+  </div>
 
     <!-- ========== 乐谱管理 ========== -->
     <div class="admin-section" id="sec-sheets">
@@ -136,7 +136,7 @@
       <div id="sheetsList">
         <div class="loading-spinner"></div>
       </div>
-    </div>
+  </div>
   </main>
 
   <div class="toast" id="toast"></div>
@@ -623,8 +623,97 @@
     loadAudioList();
     loadMvList();
     loadSheetsList();
+  
+    // ============ 编辑音频 ============
+    let editAudioId = 0;
+    function openAudioEdit(id, title, desc) {
+      editAudioId = id;
+      document.getElementById('modalTitle').textContent = '编辑音频';
+      document.getElementById('modalBody').innerHTML = \`
+        <div class="form-group"><label>标题</label><input type="text" id="editAudioTitle" value="\${decodeURIComponent(title)}" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg-secondary);"></div>
+        <div class="form-group"><label>描述</label><input type="text" id="editAudioDesc" value="\${decodeURIComponent(desc)}" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg-secondary);"></div>
+        <div class="form-group"><label>更换封面（可选）</label><input type="file" id="editAudioCover" accept="image/*" style="width:100%;padding:8px;border-radius:var(--radius-sm);background:var(--color-bg-secondary);"></div>
+        <div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-primary" onclick="submitAudioEdit()" style="flex:1;">保存</button><button class="btn" onclick="closeEditModal()" style="flex:1;background:var(--color-bg-secondary);color:var(--color-text);">取消</button></div>
+      \`;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+    async function submitAudioEdit() {
+      const title = document.getElementById('editAudioTitle').value.trim();
+      const desc = document.getElementById('editAudioDesc').value.trim();
+      const coverFile = document.getElementById('editAudioCover').files[0];
+      const formData = new FormData();
+      if (title) formData.append('title', title);
+      if (desc) formData.append('description', desc);
+      if (coverFile) formData.append('thumbnail', coverFile);
+      const res = await fetch('/api/audio/' + editAudioId, { method: 'PUT', body: formData });
+      if (res.ok) { showToast('已保存', 'success'); closeEditModal(); loadAudioList(); }
+      else { showToast('保存失败', 'error'); }
+    }
+
+    // ============ 编辑伴奏 ============
+    let editAccId = 0;
+    function openAccEdit(id, title, desc) {
+      editAccId = id;
+      document.getElementById('modalTitle').textContent = '编辑伴奏';
+      document.getElementById('modalBody').innerHTML = \`
+        <div class="form-group"><label>标题</label><input type="text" id="editAccTitle" value="\${decodeURIComponent(title)}" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg-secondary);"></div>
+        <div class="form-group"><label>描述（可选）</label><input type="text" id="editAccDesc" value="\${decodeURIComponent(desc||'')}" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg-secondary);"></div>
+        <div class="form-group"><label>更换封面（可选）</label><input type="file" id="editAccCover" accept="image/*" style="width:100%;padding:8px;border-radius:var(--radius-sm);background:var(--color-bg-secondary);"></div>
+        <div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-primary" onclick="submitAccEdit()" style="flex:1;">保存</button><button class="btn" onclick="closeEditModal()" style="flex:1;background:var(--color-bg-secondary);color:var(--color-text);">取消</button></div>
+      \`;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+    async function submitAccEdit() {
+      const title = document.getElementById('editAccTitle').value.trim();
+      const desc = document.getElementById('editAccDesc').value.trim();
+      const coverFile = document.getElementById('editAccCover').files[0];
+      const formData = new FormData();
+      if (title) formData.append('title', title);
+      if (desc) formData.append('description', desc);
+      if (coverFile) formData.append('cover', coverFile);
+      const res = await fetch('/api/accompaniment/' + editAccId, { method: 'PUT', body: formData });
+      if (res.ok) { showToast('已保存', 'success'); closeEditModal(); loadAccList(); }
+      else { showToast('保存失败', 'error'); }
+    }
+
+    // ============ 编辑MV ============
+    let editMvId = 0;
+    function openMvEdit(id, title, desc) {
+      editMvId = id;
+      document.getElementById('modalTitle').textContent = '编辑MV';
+      document.getElementById('modalBody').innerHTML = \`
+        <div class="form-group"><label>标题</label><input type="text" id="editMvTitle" value="\${decodeURIComponent(title)}" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg-secondary);"></div>
+        <div class="form-group"><label>描述</label><input type="text" id="editMvDesc" value="\${decodeURIComponent(desc)}" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg-secondary);"></div>
+        <div class="form-group"><label>更换封面（可选）</label><input type="file" id="editMvCover" accept="image/*" style="width:100%;padding:8px;border-radius:var(--radius-sm);background:var(--color-bg-secondary);"></div>
+        <div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-primary" onclick="submitMvEdit()" style="flex:1;">保存</button><button class="btn" onclick="closeEditModal()" style="flex:1;background:var(--color-bg-secondary);color:var(--color-text);">取消</button></div>
+      \`;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+    async function submitMvEdit() {
+      const title = document.getElementById('editMvTitle').value.trim();
+      const desc = document.getElementById('editMvDesc').value.trim();
+      const coverFile = document.getElementById('editMvCover').files[0];
+      const formData = new FormData();
+      if (title) formData.append('title', title);
+      if (desc) formData.append('description', desc);
+      if (coverFile) formData.append('thumbnail', coverFile);
+      const res = await fetch('/api/mv/' + editMvId, { method: 'PUT', body: formData });
+      if (res.ok) { showToast('已保存', 'success'); closeEditModal(); loadMvList(); }
+      else { showToast('保存失败', 'error'); }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
   </script>
-    });
-  }
+
+  <!-- ========== 编辑弹窗 ========== -->
+  <div id="editModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
+    <div class="modal-content" style="background:var(--color-bg);padding:30px;border-radius:var(--radius);max-width:420px;width:90%;max-height:80vh;overflow-y:auto;">
+      <h3 id="modalTitle" style="margin-bottom:20px;color:var(--color-primary);">编辑</h3>
+      <div id="modalBody"></div>
+    </div>
+  </div>
 </body>
 </html>

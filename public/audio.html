@@ -76,12 +76,16 @@
             <div class="title">${audio.title}</div>
             <div class="artist">${audio.artist_name}</div>
           </div>
-          <div class="play-icon">▶</div>
+          <div class="audio-actions">
+            <a href="/uploads/${audio.file_path}" download class="download-icon" title="下载">⬇</a>
+            <div class="play-icon">▶</div>
+          </div>
         </div>
       `).join('');
 
       el.querySelectorAll('.audio-card').forEach(card => {
-        card.onclick = () => {
+        card.onclick = (e) => {
+          if (e.target.classList.contains('download-icon')) return;
           const idx = parseInt(card.dataset.index);
           window.player.setPlaylist(data);
           window.player.loadSong({ ...data[idx], type: 'audio' });

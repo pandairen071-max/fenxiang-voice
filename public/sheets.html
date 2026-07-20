@@ -46,6 +46,7 @@
     <img id="lightboxImg" src="" alt="乐谱">
     <button class="lightbox-nav lightbox-next" onclick="nextSheet()">›</button>
     <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+    <a id="lightboxDownload" href="" download class="lightbox-download" title="下载">⬇ 下载</a>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -84,6 +85,7 @@
       const sheet = filtered[currentIndex];
       if (!sheet) return;
       document.getElementById('lightboxImg').src = '/uploads/' + sheet.image_path;
+      document.getElementById('lightboxDownload').href = '/uploads/' + sheet.image_path;
       document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} / ${filtered.length}`;
       document.getElementById('lightbox').classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -97,14 +99,18 @@
     function prevSheet() {
       const filtered = getFilteredSheets();
       currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
-      document.getElementById('lightboxImg').src = '/uploads/' + filtered[currentIndex].image_path;
+      const sheet = filtered[currentIndex];
+      document.getElementById('lightboxImg').src = '/uploads/' + sheet.image_path;
+      document.getElementById('lightboxDownload').href = '/uploads/' + sheet.image_path;
       document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} / ${filtered.length}`;
     }
 
     function nextSheet() {
       const filtered = getFilteredSheets();
       currentIndex = (currentIndex + 1) % filtered.length;
-      document.getElementById('lightboxImg').src = '/uploads/' + filtered[currentIndex].image_path;
+      const sheet = filtered[currentIndex];
+      document.getElementById('lightboxImg').src = '/uploads/' + sheet.image_path;
+      document.getElementById('lightboxDownload').href = '/uploads/' + sheet.image_path;
       document.getElementById('lightboxCounter').textContent = `${currentIndex + 1} / ${filtered.length}`;
     }
 

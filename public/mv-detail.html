@@ -58,6 +58,7 @@
           <h1 class="detail-title">${mv.title}</h1>
           <div class="detail-meta">${mv.artist_name}</div>
           ${mv.description ? `<p class="detail-desc">${decodeUnicode(mv.description)}</p>` : ''}
+          ${isVideoFile ? `<a href="/uploads/${mv.file_path}" download class="download-btn">⬇ 下载视频</a>` : ''}
         `;
       })
       .catch(() => {

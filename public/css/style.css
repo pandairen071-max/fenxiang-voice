@@ -164,6 +164,24 @@ input, textarea { font-family: inherit; }
   margin: 0 auto;
 }
 
+.tagline-main {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  width: 400px;
+  margin: 0 auto 4px;
+  text-align: right;
+}
+
+.tagline-ref {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  width: 400px;
+  margin: 0 auto 0 auto;
+  text-align: right;
+}
+
 /* 三大板块卡片 */
 .section-cards {
   display: flex;
